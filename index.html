@@ -69,10 +69,13 @@
       const accessToken = gapi.auth.getToken().access_token;
       const headers = new Headers({ 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' });
 
+      // Verifica se esiste la cartella
       const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`, { headers });
       const searchData = await searchRes.json();
+
       let folderId = searchData.files && searchData.files.length ? searchData.files[0].id : null;
 
+      // Se non esiste, crea la cartella
       if (!folderId) {
         const createRes = await fetch("https://www.googleapis.com/drive/v3/files", {
           method: "POST",
@@ -93,6 +96,7 @@
           mimeType: file.type || 'application/octet-stream'
         };
 
+        const accessToken = gapi.auth.getToken().access_token;
         const form = new FormData();
         form.append("metadata", new Blob([JSON.stringify({ ...metadata, parents: [folderId] })], { type: 'application/json' }));
         form.append("file", file);
