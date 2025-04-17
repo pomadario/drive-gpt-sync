@@ -18,12 +18,15 @@
           const authInstance = gapi.auth2.getAuthInstance();
           if (!authInstance.isSignedIn.get()) {
             authInstance.signIn().then(() => {
+              document.getElementById('authStatus').innerText = '✅ Accesso effettuato. Puoi caricare i file.';
               document.getElementById('uploadInput').disabled = false;
               document.getElementById('uploadBtn').disabled = false;
+              document.getElementById('authStatus').innerText = '✅ Accesso effettuato. Puoi caricare i file.';
             });
           } else {
             document.getElementById('uploadInput').disabled = false;
             document.getElementById('uploadBtn').disabled = false;
+            document.getElementById('authStatus').innerText = '✅ Accesso effettuato. Puoi caricare i file.';
           }
         });
       });
@@ -32,6 +35,7 @@
   </script>
 </head>
 <body>
+  <div id="authStatus" style="text-align:center; color:#666; font-style:italic; margin: 10px 0;">🔐 Autenticazione in corso...</div>
   <header>Drive Live Editor + ChatGPT – Modifica in tempo reale con Google Drive</header>
   <main style="padding: 20px; font-family: Inter, sans-serif;">
     <section>
@@ -88,6 +92,7 @@
           name: file.name,
           mimeType: file.type || 'application/octet-stream'
         };
+
         const form = new FormData();
         form.append("metadata", new Blob([JSON.stringify({ ...metadata, parents: [folderId] })], { type: 'application/json' }));
         form.append("file", file);
@@ -107,4 +112,3 @@
   </script>
 </body>
 </html>
-
