@@ -5,10 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Drive Live Editor + ChatGPT</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-  <!-- Link a librerie, stili e script... -->
+  <script src="https://apis.google.com/js/api.js"></script>
+  <script>
+    function initializeGAPI() {
+      gapi.load('client:auth2', () => {
+        gapi.client.init({
+          apiKey: 'AIzaSyCjFcAjvWZxNh67_ZEDg8RsRX5S_FDzMzs',
+          clientId: '443438976951-6r1merovuesi82i9mihhkj29rds6aa4r.apps.googleusercontent.com',
+          discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
+          scope: 'https://www.googleapis.com/auth/drive.file'
+        }).then(() => {
+          const authInstance = gapi.auth2.getAuthInstance();
+          if (!authInstance.isSignedIn.get()) {
+            authInstance.signIn().then(() => {
+              document.getElementById('uploadInput').disabled = false;
+              document.getElementById('uploadBtn').disabled = false;
+            });
+          } else {
+            document.getElementById('uploadInput').disabled = false;
+            document.getElementById('uploadBtn').disabled = false;
+          }
+        });
+      });
+    }
+    window.onload = initializeGAPI;
+  </script>
 </head>
 <body>
   <header>Drive Live Editor + ChatGPT – Modifica in tempo reale con Google Drive</header>
-  <!-- Contenuto completo già validato -->
+  <!-- Resto del contenuto invariato -->
 </body>
 </html>
