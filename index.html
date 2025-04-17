@@ -36,12 +36,8 @@
 <body>
   <div id="authStatus" style="text-align:center; color:#666; font-style:italic; margin: 10px 0;">🔐 Autenticazione in corso...</div>
   <button id="loginBtn" style="display:block; margin:0 auto 20px auto;">🔐 Accedi con Google</button>
-  <header>
-    Drive Live Editor + ChatGPT – Modifica in tempo reale con Google Drive
-    <p style="font-size: 0.9em; color: #444; font-style: italic; margin-top: 5px;">
-      Carica, modifica e gestisci file direttamente su Google Drive usando ChatGPT. Nessun download o upload manuale necessario.
-    </p>
-  </header>
+  <header style="text-align:center; font-size: 1.2rem; font-weight: bold;">Drive Live Editor + ChatGPT – Modifica in tempo reale con Google Drive</header>
+  <p style="text-align:center; color:#444; font-style: italic; margin-bottom: 30px;">Carica, modifica e gestisci file direttamente su Google Drive usando ChatGPT. Nessun download o upload manuale necessario.</p>
   <main style="padding: 20px; font-family: Inter, sans-serif;">
     <section>
       <h2>📤 Caricamento file</h2>
@@ -109,6 +105,14 @@
         });
 
         const result = await response.json();
+
+        // Imposta il file come accessibile pubblicamente
+        await fetch(`https://www.googleapis.com/drive/v3/files/${result.id}/permissions`, {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify({ role: 'reader', type: 'anyone' })
+        });
+
         const now = new Date().toLocaleString();
         const row = `<tr><td>${file.name}</td><td>${now}</td><td><a href="https://drive.google.com/file/d/${result.id}/view" target="_blank">🔗</a></td></tr>`;
         document.getElementById('logBody').insertAdjacentHTML('beforeend', row);
