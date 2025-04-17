@@ -9,6 +9,7 @@
   <script>
     function initializeGAPI() {
       gapi.load('client:auth2', () => {
+        console.log('⚙️ Inizializzazione GAPI...');
         gapi.client.init({
           apiKey: 'AIzaSyCjFcAjvWZxNh67_ZEDg8RsRX5S_FDzMzs',
           clientId: '443438976951-6r1merovuesi82i9mihhkj29rds6aa4r.apps.googleusercontent.com',
@@ -16,14 +17,18 @@
           scope: 'https://www.googleapis.com/auth/drive.file'
         }).then(() => {
           const authInstance = gapi.auth2.getAuthInstance();
+          console.log('✅ GAPI client inizializzato');
           if (!authInstance.isSignedIn.get()) {
+            console.log('🔐 Utente NON autenticato, avvio signIn()...');
             authInstance.signIn().then(() => {
+              console.log('✅ Login completato');
               document.getElementById('authStatus').innerText = '✅ Accesso effettuato. Puoi caricare i file.';
               document.getElementById('uploadInput').disabled = false;
               document.getElementById('uploadBtn').disabled = false;
               document.getElementById('authStatus').innerText = '✅ Accesso effettuato. Puoi caricare i file.';
             });
           } else {
+            console.log('🟢 Utente già autenticato');
             document.getElementById('uploadInput').disabled = false;
             document.getElementById('uploadBtn').disabled = false;
             document.getElementById('authStatus').innerText = '✅ Accesso effettuato. Puoi caricare i file.';
