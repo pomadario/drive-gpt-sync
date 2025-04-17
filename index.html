@@ -5,11 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Drive Live Editor + ChatGPT</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-  <script src="https://apis.google.com/js/api.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script>
+    let tokenClient;
+
+    function initializeOAuth() {
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: '443438976951-6r1merovuesi82i9mihhkj29rds6aa4r.apps.googleusercontent.com',
+        scope: 'https://www.googleapis.com/auth/drive.file',
+        callback: (tokenResponse) => {
+          if (tokenResponse && tokenResponse.access_token) {
+            document.getElementById('authStatus').innerText = '✅ Accesso effettuato. Puoi caricare i file.';
+            document.getElementById('uploadInput').disabled = false;
+            document.getElementById('uploadBtn').disabled = false;
+            window.accessToken = tokenResponse.access_token;
+          } else {
+            document.getElementById('authStatus').innerText = '❌ Errore durante l\'autenticazione.';
+          }
+        }
+      });
+
+      document.getElementById('loginBtn').onclick = () => {
+        tokenClient.requestAccessToken();
+      };
+    }
+
+    window.onload = initializeOAuth;
+  </script>
 </head>
 <body>
   <div id="authStatus" style="text-align:center; color:#666; font-style:italic; margin: 10px 0;">🔐 Autenticazione in corso...</div>
-  <header>Drive Live Editor + ChatGPT – Modifica in tempo reale con Google Drive</header>
+  <button id="loginBtn" style="display:block; margin:0 auto 20px auto;">🔐 Accedi con Google</button>
+  <header>
+    Drive Live Editor + ChatGPT – Modifica in tempo reale con Google Drive
+    <p style="font-size: 0.9em; color: #444; font-style: italic; margin-top: 5px;">
+      Carica, modifica e gestisci file direttamente su Google Drive usando ChatGPT. Nessun download o upload manuale necessario.
+    </p>
+  </header>
   <main style="padding: 20px; font-family: Inter, sans-serif;">
     <section>
       <h2>📤 Caricamento file</h2>
@@ -34,44 +66,12 @@
     </section>
   </main>
   <script>
-    function initializeGAPI() {
-      gapi.load('client:auth2', () => {
-        gapi.client.init({
-          apiKey: 'AIzaSyCjFcAjvWZxNh67_ZEDg8RsRX5S_FDzMzs',
-          clientId: '443438976951-6r1merovuesi82i9mihhkj29rds6aa4r.apps.googleusercontent.com',
-          discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
-          scope: 'https://www.googleapis.com/auth/drive.file'
-        }).then(() => {
-          const authInstance = gapi.auth2.getAuthInstance();
-          if (!authInstance.isSignedIn.get()) {
-            authInstance.signIn().then(() => {
-              document.getElementById('authStatus').innerText = '✅ Accesso effettuato. Puoi caricare i file.';
-              document.getElementById('uploadInput').disabled = false;
-              document.getElementById('uploadBtn').disabled = false;
-            });
-          } else {
-            document.getElementById('uploadInput').disabled = false;
-            document.getElementById('uploadBtn').disabled = false;
-            document.getElementById('authStatus').innerText = '✅ Accesso effettuato. Puoi caricare i file.';
-          }
-        });
-      });
-    }
-
-    window.onload = () => {
-      const script = document.createElement('script');
-      script.src = "https://apis.google.com/js/api.js";
-      script.onload = initializeGAPI;
-      document.body.appendChild(script);
-    };
-
     document.getElementById('uploadBtn').addEventListener('click', async () => {
       const files = document.getElementById('uploadInput').files;
       const folderName = document.getElementById('targetFolder').value.trim();
       if (!files.length || !folderName) return alert("Inserisci il nome della cartella e seleziona almeno un file.");
 
-      const accessToken = gapi.auth.getToken().access_token;
-      const headers = new Headers({ 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' });
+      const headers = new Headers({ 'Authorization': 'Bearer ' + window.accessToken, 'Content-Type': 'application/json' });
 
       const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`, { headers });
       const searchData = await searchRes.json();
@@ -104,7 +104,7 @@
 
         const response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id", {
           method: "POST",
-          headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
+          headers: new Headers({ 'Authorization': 'Bearer ' + window.accessToken }),
           body: form
         });
 
