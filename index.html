@@ -36,8 +36,8 @@
 <body>
   <div id="authStatus" style="text-align:center; color:#666; font-style:italic; margin: 10px 0;">🔐 Autenticazione in corso...</div>
   <button id="loginBtn" style="display:block; margin:0 auto 20px auto;">🔐 Accedi con Google</button>
-  <header>Drive Live Editor + ChatGPT – Modifica in tempo reale con Google Drive</header>
-  <p style="font-style: italic; text-align:center; font-size: 0.95em; margin-top: -10px;">Carica, modifica e gestisci file direttamente su Google Drive usando ChatGPT. Nessun download o upload manuale necessario.</p>
+  <header style="text-align:center; font-weight:bold; font-size: 1.1em;">Drive Live Editor + ChatGPT – Modifica in tempo reale con Google Drive</header>
+  <p style="text-align:center; font-style:italic; margin: 5px auto 25px auto; max-width: 600px;">Carica, modifica e gestisci file direttamente su Google Drive usando ChatGPT. Nessun download o upload manuale necessario.</p>
   <main style="padding: 20px; font-family: Inter, sans-serif;">
     <section>
       <h2>📤 Caricamento file</h2>
@@ -105,19 +105,6 @@
         });
 
         const result = await response.json();
-
-        await fetch(`https://www.googleapis.com/drive/v3/files/${result.id}/permissions`, {
-          method: "POST",
-          headers: new Headers({
-            'Authorization': 'Bearer ' + window.accessToken,
-            'Content-Type': 'application/json'
-          }),
-          body: JSON.stringify({
-            role: "reader",
-            type: "anyone"
-          })
-        });
-
         const now = new Date().toLocaleString();
         const row = `<tr><td>${file.name}</td><td>${now}</td><td><a href="https://drive.google.com/file/d/${result.id}/view" target="_blank">🔗</a></td></tr>`;
         document.getElementById('logBody').insertAdjacentHTML('beforeend', row);
