@@ -12,7 +12,7 @@
     function initializeOAuth() {
       tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: '443438976951-6r1merovuesi82i9mihhkj29rds6aa4r.apps.googleusercontent.com',
-        scope: 'https://www.googleapis.com/auth/drive',
+        scope: 'https://www.googleapis.com/auth/drive.file',
         callback: (tokenResponse) => {
           if (tokenResponse && tokenResponse.access_token) {
             document.getElementById('authStatus').innerText = '✅ Accesso effettuato. Puoi caricare i file.';
@@ -36,8 +36,8 @@
 <body>
   <div id="authStatus" style="text-align:center; color:#666; font-style:italic; margin: 10px 0;">🔐 Autenticazione in corso...</div>
   <button id="loginBtn" style="display:block; margin:0 auto 20px auto;">🔐 Accedi con Google</button>
-  <header style="text-align:center; font-weight:bold; font-size: 1.1em;">Drive Live Editor + ChatGPT – Modifica in tempo reale con Google Drive</header>
-  <p style="text-align:center; font-style:italic; margin: 5px auto 25px auto; max-width: 600px;">Carica, modifica e gestisci file direttamente su Google Drive usando ChatGPT. Nessun download o upload manuale necessario.</p>
+  <header>Drive Live Editor + ChatGPT – Modifica in tempo reale con Google Drive</header>
+  <p style="text-align:center; font-style: italic; color: #444; margin-top: -10px;">Carica, modifica e gestisci file direttamente su Google Drive usando ChatGPT. Nessun download o upload manuale necessario.</p>
   <main style="padding: 20px; font-family: Inter, sans-serif;">
     <section>
       <h2>📤 Caricamento file</h2>
