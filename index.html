@@ -39,8 +39,8 @@
   <main style="padding: 20px; font-family: Inter, sans-serif;">
     <section>
       <h2>📤 Caricamento file</h2>
-      <label for="targetFolder">📁 Nome della sottocartella su Drive:</label>
-      <input type="text" id="targetFolder" placeholder="es. progetto-xyz" style="margin-bottom: 10px; display: block;" />
+      <label for="targetFolder">📁 Nome del progetto:</label>
+      <input type="text" id="targetFolder" placeholder="es. drive-gpt-sync" style="margin-bottom: 10px; display: block;" />
       <input type="file" id="uploadInput" multiple disabled />
       <button id="uploadBtn" disabled>Carica su Drive</button>
     </section>
@@ -62,13 +62,15 @@
   <script>
     document.getElementById('uploadBtn').addEventListener('click', async () => {
       const files = document.getElementById('uploadInput').files;
-      const folderName = document.getElementById('targetFolder').value.trim();
-      if (!files.length || !folderName) return alert("Inserisci il nome della cartella e seleziona almeno un file.");
+      const projectFolder = document.getElementById('targetFolder').value.trim();
+      const rootFolderId = "1St-hARgvujk3CtSqhrcWjK7oD1C4Jvxh";
+      if (!files.length || !projectFolder) return alert("Inserisci il nome del progetto e seleziona almeno un file.");
 
       const accessToken = gapi.auth.getToken().access_token;
       const headers = new Headers({ 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' });
 
-      const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`, { headers });
+      // Cerca o crea la sottocartella dentro GPT-PROGETTI DARIO
+      const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${projectFolder}' and mimeType='application/vnd.google-apps.folder' and trashed=false and '${rootFolderId}' in parents`, { headers });
       const searchData = await searchRes.json();
 
       let folderId = searchData.files && searchData.files.length ? searchData.files[0].id : null;
@@ -78,9 +80,9 @@
           method: "POST",
           headers,
           body: JSON.stringify({
-            name: folderName,
+            name: projectFolder,
             mimeType: "application/vnd.google-apps.folder",
-            parents: ["1St-hARgvujk3CtSqhrcWjK7oD1C4Jvxh"]
+            parents: [rootFolderId]
           })
         });
         const createData = await createRes.json();
