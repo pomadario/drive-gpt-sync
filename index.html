@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Drive Live Editor + ChatGPT</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-  <script src="https://apis.google.com/js/api.js" onload="initializeGAPI()"></script>
+  <script src="https://apis.google.com/js/api.js"></script>
 </head>
 <body>
   <div id="authStatus" style="text-align:center; color:#666; font-style:italic; margin: 10px 0;">🔐 Autenticazione in corso...</div>
@@ -57,6 +57,13 @@
         });
       });
     }
+
+    window.onload = () => {
+      const script = document.createElement('script');
+      script.src = "https://apis.google.com/js/api.js";
+      script.onload = initializeGAPI;
+      document.body.appendChild(script);
+    };
 
     document.getElementById('uploadBtn').addEventListener('click', async () => {
       const files = document.getElementById('uploadInput').files;
