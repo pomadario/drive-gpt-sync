@@ -79,10 +79,9 @@
     <label for="projectName">📁 Nome nuovo progetto:</label>
     <input type="text" id="projectName" placeholder="es. drive-gpt-sync" />
 
-    <label for="existingFolder">📁 Oppure scegli una cartella esistente:</label>
+    <label for="existingFolder">📁 Oppure scegli una cartella progetto esistente:</label>
     <select id="existingFolder">
-      <option value="">-- Seleziona una cartella --</option>
-      <!-- Le opzioni verranno popolate dinamicamente -->
+      <option value="">-- Seleziona una cartella da GPT-PROGETTI DARIO --</option>
     </select>
 
     <label for="fileInput">Seleziona file:</label>
@@ -108,8 +107,7 @@
     const CLIENT_ID = 'YOUR_CLIENT_ID';
     const API_KEY = 'YOUR_API_KEY';
     const SCOPES = 'https://www.googleapis.com/auth/drive.file';
-
-    let tokenClient;
+    const ROOT_FOLDER_ID = '1St-hARgvujk3CtSqhrcWjK7oD1C4Jvxh';
 
     function gapiLoaded() {
       gapi.load('client', initializeGapiClient);
@@ -120,7 +118,7 @@
         apiKey: API_KEY,
         discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
       });
-      listUserFolders();
+      listSubfoldersInRoot();
     }
 
     function signOut() {
@@ -128,9 +126,9 @@
       window.location.reload();
     }
 
-    async function listUserFolders() {
+    async function listSubfoldersInRoot() {
       const response = await gapi.client.drive.files.list({
-        q: "mimeType='application/vnd.google-apps.folder' and trashed=false",
+        q: `'${ROOT_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
         fields: 'files(id, name)'
       });
 
@@ -160,7 +158,8 @@
         const createRes = await gapi.client.drive.files.create({
           resource: {
             name: newProject,
-            mimeType: 'application/vnd.google-apps.folder'
+            mimeType: 'application/vnd.google-apps.folder',
+            parents: [ROOT_FOLDER_ID]
           },
           fields: 'id'
         });
