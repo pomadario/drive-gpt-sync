@@ -2,130 +2,170 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Drive GPT Sync</title>
   <style>
     body {
-      font-family: sans-serif;
-      background: #f5f5f5;
+      font-family: Arial, sans-serif;
+      background: #f3f3f3;
       margin: 0;
-      padding: 0 20px;
+      padding: 20px;
+      color: #333;
     }
     h1 {
-      color: #333;
       text-align: center;
+      color: #007bff;
+    }
+    .section {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
     .status {
-      text-align: center;
-      margin: 10px 0;
-      font-weight: bold;
       color: green;
-    }
-    .upload-section {
-      background: #fff;
-      border-radius: 8px;
-      padding: 20px;
-      margin: 20px auto;
-      max-width: 600px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    label, input, button {
-      display: block;
-      width: 100%;
-      margin-bottom: 10px;
+      font-weight: bold;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
+      margin-top: 10px;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
     }
     th, td {
-      border: 1px solid #ddd;
-      padding: 10px;
+      padding: 8px;
       text-align: left;
     }
-    th {
-      background: #eee;
-    }
-    .badge {
-      display: inline-block;
-      padding: 4px 8px;
-      font-size: 0.9em;
-      border-radius: 4px;
-    }
-    .badge-success {
-      background-color: #4caf50;
+    .log-table th {
+      background: #007bff;
       color: white;
     }
-    .badge-error {
-      background-color: #f44336;
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    input[type="file"] {
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 8px 16px;
+      background: #007bff;
       color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
     }
   </style>
+  <script src="https://apis.google.com/js/api.js"></script>
 </head>
 <body>
-  <h1>📂 Drive GPT Sync</h1>
-  <div class="status" id="status">🔒 Accesso non effettuato</div>
-
-  <div class="upload-section">
-    <label for="projectName">Nome del progetto:</label>
-    <input type="text" id="projectName" placeholder="es. drive-gpt-sync" />
-
-    <label for="fileInput">Seleziona file:</label>
-    <input type="file" id="fileInput" />
-
-    <button id="uploadBtn">Carica su Drive</button>
+  <h1>Drive GPT Sync</h1>
+  <div class="section">
+    <p class="status">✅ Accesso effettuato. Pronto alla sincronizzazione.</p>
+    <button onclick="signOut()">Esci</button>
   </div>
 
-  <h2>📄 Log dei file caricati</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Nome file</th>
-        <th>Data</th>
-        <th>Download</th>
-      </tr>
-    </thead>
-    <tbody id="logTable">
-      <tr>
-        <td colspan="3">Nessun file caricato</td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="section">
+    <h2>📤 Caricamento file</h2>
+    <label for="projectName">📁 Nome del progetto:</label>
+    <input type="text" id="projectName" placeholder="es. drive-gpt-sync" />
+    <input type="file" id="fileInput" />
+    <button onclick="uploadFile()">Carica su Drive</button>
+  </div>
+
+  <div class="section">
+    <h2>📜 Log dei file caricati</h2>
+    <table class="log-table">
+      <thead>
+        <tr>
+          <th>Nome file</th>
+          <th>Data</th>
+          <th>Stato</th>
+        </tr>
+      </thead>
+      <tbody id="logTable"></tbody>
+    </table>
+  </div>
 
   <script>
-    // Simula login (inserire codice OAuth o gapi se necessario)
-    document.getElementById("status").textContent = "✅ Accesso effettuato. Puoi caricare i file.";
+    const CLIENT_ID = 'YOUR_CLIENT_ID'; // Inserisci il tuo client ID OAuth2
+    const API_KEY = 'YOUR_API_KEY'; // Inserisci la tua API Key
+    const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
-    document.getElementById("uploadBtn").addEventListener("click", () => {
-      const project = document.getElementById("projectName").value.trim();
-      const fileInput = document.getElementById("fileInput");
-      if (!project || fileInput.files.length === 0) {
-        alert("Inserisci il nome del progetto e seleziona un file.");
+    let tokenClient;
+    let gapiInited = false;
+    let gisInited = false;
+
+    function gapiLoaded() {
+      gapi.load('client', initializeGapiClient);
+    }
+
+    async function initializeGapiClient() {
+      await gapi.client.init({
+        apiKey: API_KEY,
+        discoveryDocs: [
+          'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
+        ],
+      });
+      gapiInited = true;
+    }
+
+    function signOut() {
+      google.accounts.oauth2.revoke(gapi.auth.getToken().access_token);
+      window.location.reload();
+    }
+
+    async function uploadFile() {
+      const fileInput = document.getElementById('fileInput');
+      const projectName = document.getElementById('projectName').value.trim();
+      if (!fileInput.files.length || !projectName) {
+        alert('Inserisci un nome progetto e seleziona un file');
         return;
       }
 
-      const fileName = fileInput.files[0].name;
-      const now = new Date().toLocaleString();
+      const file = fileInput.files[0];
 
-      const newRow = `
-        <tr>
-          <td>${fileName}</td>
-          <td>${now}</td>
-          <td><span class="badge badge-success">✔ Caricato (simulato)</span></td>
-        </tr>
+      const metadata = {
+        name: file.name,
+        parents: [],
+      };
+
+      const accessToken = gapi.auth.getToken().access_token;
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+      form.append('file', file);
+
+      const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
+        method: 'POST',
+        headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
+        body: form,
+      });
+
+      const result = await res.json();
+      addToLog(file.name);
+    }
+
+    function addToLog(name) {
+      const log = document.getElementById('logTable');
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${name}</td>
+        <td>${new Date().toLocaleString()}</td>
+        <td>✔ Caricato</td>
       `;
+      log.appendChild(row);
+    }
 
-      const table = document.getElementById("logTable");
-      if (table.children[0].children.length === 1 && table.textContent.includes("Nessun file")) {
-        table.innerHTML = newRow;
-      } else {
-        table.innerHTML += newRow;
-      }
-
-      // RESET
-      fileInput.value = "";
-    });
+    window.onload = gapiLoaded;
   </script>
 </body>
 </html>
